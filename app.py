@@ -39,91 +39,80 @@ def index():
             background-size: cover;
             color: #eee;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            width: 100vw;
             font-size: 18px;
+            overflow-x: hidden;
         }}
         .container {{
-            background-color: rgba(0, 0, 0, 0.75);
-            border-radius: 15px;
-            width: 700px;
-            max-width: 90vw;
-            padding: 40px 50px;
-            box-shadow: 0 0 15px 5px rgba(0, 0, 0, 0.7);
+            background: transparent;
+            box-shadow: 0 0 16px 5px rgba(0,0,0,0.15);
+            border-radius: 20px;
+            width: 98vw;
+            min-height: 98vh;
+            padding: 6vw 2vw 2vw 2vw;
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }}
+        @media (min-width: 700px) {{
+            .container {{
+                max-width: 500px;
+                min-height: 80vh;
+                padding: 40px 60px;
+            }}
         }}
         h2 {{
             text-align: center;
             margin-bottom: 25px;
             font-weight: 700;
             letter-spacing: 1.2px;
-            color: #a0d914;
-            text-shadow: 0 0 10px #4CAF50;
+            color: #31cc65;
+            text-shadow: 0 0 1px #000;
         }}
-        input.form-control, select.form-control {{
+        input.form-control,
+        select.form-control {{
             width: 100%;
-            padding: 15px 12px;
-            margin-bottom: 20px;
+            padding: 14px 12px;
+            margin-bottom: 18px;
             border-radius: 8px;
             border: none;
-            font-size: 16px;
-            outline: none;
-            box-sizing: border-box;
+            font-size: 18px;
+            color: #23272e;
+            background: rgba(255,255,255,0.86);
         }}
         input.form-control:focus, select.form-control:focus {{
             box-shadow: 0 0 10px #4CAF50;
+            outline: none;
+        }}
+        button.btn-submit, button.btn-stop {{
+            width: 100%;
+            padding: 16px 0;
+            border-radius: 8px;
+            font-size: 20px;
+            margin-top: 10px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
         }}
         button.btn-submit {{
-            display: block;
-            width: 100%;
-            padding: 15px 0;
-            border: none;
-            border-radius: 8px;
-            background-color: #4CAF50;
-            color: white;
-            font-size: 20px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 10px;
-        }}
-        button.btn-submit:hover {{
-            background-color: #45a049;
+            background: #31cc65;
+            color: #fff;
         }}
         button.btn-stop {{
-            display: block;
-            width: 100%;
-            padding: 15px 0;
-            border: none;
-            border-radius: 8px;
-            background-color: #e74c3c;
-            color: white;
-            font-size: 20px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 10px;
-        }}
-        button.btn-stop:hover {{
-            background-color: #c0392b;
+            background: #eb3d31;
+            color: #fff;
         }}
         h3 {{
             margin-top: 40px;
             margin-bottom: 20px;
             letter-spacing: 1px;
             color: #f39c12;
-            text-shadow: 0 0 8px #f39c12;
+            text-shadow: 0 0 1px #000;
         }}
-        @media (max-width: 800px) {{
-            .container {{
-                width: 95vw;
-                padding: 30px 25px;
-                font-size: 16px;
-            }}
-            button.btn-submit, button.btn-stop {{
-                font-size: 18px;
-                padding: 12px 0;
-            }}
+        form {{
+            margin-bottom: 28px;
         }}
     </style>
 </head>
