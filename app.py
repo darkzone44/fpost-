@@ -45,40 +45,41 @@ def index():
         }}
         .container {{
             background: transparent;
-            box-shadow: 0 0 16px 5px rgba(0,0,0,0.15);
-            border-radius: 20px;
-            width: 98vw;
-            min-height: 98vh;
-            padding: 6vw 2vw 2vw 2vw;
-            max-width: 600px;
-            margin: 0 auto;
+            box-shadow: 0 0 16px 5px rgba(0,0,0,0.10);
+            border-radius: 17px;
+            width: 97vw;
+            max-width: 450px;
+            min-height: unset;
+            padding: 30px 15px 18px 15px;
+            margin: 7vh auto 0 auto;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
         }}
-        @media (min-width: 700px) {{
+        @media (min-width: 570px) {{
             .container {{
-                max-width: 500px;
-                min-height: 80vh;
-                padding: 40px 60px;
+                margin-top: 6vh;
+                max-width: 450px;
+                padding: 36px 36px 22px 36px;
             }}
         }}
         h2 {{
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 22px;
             font-weight: 700;
             letter-spacing: 1.2px;
             color: #31cc65;
             text-shadow: 0 0 1px #000;
+            font-size: 21px;
         }}
         input.form-control,
         select.form-control {{
             width: 100%;
-            padding: 14px 12px;
-            margin-bottom: 18px;
+            padding: 13px 10px;
+            margin-bottom: 12px;
             border-radius: 8px;
             border: none;
-            font-size: 18px;
+            font-size: 17px;
             color: #23272e;
             background: rgba(255,255,255,0.86);
         }}
@@ -88,9 +89,9 @@ def index():
         }}
         button.btn-submit, button.btn-stop {{
             width: 100%;
-            padding: 16px 0;
+            padding: 14px 0;
             border-radius: 8px;
-            font-size: 20px;
+            font-size: 19px;
             margin-top: 10px;
             border: none;
             font-weight: bold;
@@ -105,14 +106,15 @@ def index():
             color: #fff;
         }}
         h3 {{
-            margin-top: 40px;
-            margin-bottom: 20px;
+            margin-top: 32px;
+            margin-bottom: 14px;
             letter-spacing: 1px;
             color: #f39c12;
             text-shadow: 0 0 1px #000;
+            font-size:17px;
         }}
         form {{
-            margin-bottom: 28px;
+            margin-bottom: 18px;
         }}
     </style>
 </head>
