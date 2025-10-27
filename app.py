@@ -163,4 +163,5 @@ def send_comment():
         return jsonify({'error': 'रिस्पॉन्स पढ़ने में समस्या'}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
+    
