@@ -31,111 +31,117 @@ def index():
     <meta charset="UTF-8" />
     <title>POST Comment Task Runner</title>
     <style>
-        html, body {{
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100vw;
-        }}
         body {{
+            margin: 0 !important;
+            padding: 0 !important;
+            min-height: 100vh !important;
+            width: 100vw !important;
             font-family: 'Segoe UI', Verdana, Geneva, Tahoma, sans-serif;
             background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1350&q=80') no-repeat center center fixed;
             background-size: cover;
-            color: #222;
-            min-height: 100vh;
-            min-width: 100vw;
-            font-size: 18px;
-            overflow-x: hidden;
+            color: #1f2328;
             box-sizing: border-box;
         }}
-        .container {{
-            background: rgba(255,255,255,0.88);
-            width: 98vw;
-            min-height: 97vh;
-            max-width: 99vw;
-            max-height: 100vh;
-            margin: 0;
-            padding: 6vw 4vw 3vw 4vw;
-            border-radius: 18px;
-            box-shadow: 0 10px 34px 2px rgba(44,62,80,0.13);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            position: absolute;
-            left: 1vw;
-            top: 1vw;
-            right: 1vw;
-            bottom: 1vw;
-        }}
-        h2 {{
+        .form-title {{
             text-align: center;
-            margin-bottom: 24px;
+            margin: 5vw 0 3vw 0;
             font-weight: 700;
             color: #22bb66;
-            font-size: 26px;
-            letter-spacing: 1.2px;
+            font-size: 7vw;
+            letter-spacing: 1.15vw;
+            text-shadow: 0 2px 8px #fff, 0 0px 2px #163b2c18;
         }}
-        input.form-control,
-        select.form-control {{
-            width: 100%;
-            min-height: 60px;
-            padding: 18px 15px;
-            margin-bottom: 19px;
-            border-radius: 11px;
-            border: 1.5px solid #c2c9d6;
-            font-size: 22px;
-            background: #f8fafc;
-            color: #20212c;
+        .full-form {{
+            width: 98vw;
+            max-width: 720px;
+            margin: 0 auto 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }}
+        input.form-control, select.form-control {{
+            display: block;
+            width: 93vw;
+            max-width: 680px;
+            min-height: 53px;
+            padding: 18px 16px;
+            margin: 0 auto 15px auto;
+            border-radius: 13px;
+            border: 1.7px solid #23d485;
+            font-size: 4.7vw;
+            background: rgba(255,255,255,0.91);
+            color: #222c27;
             box-sizing: border-box;
+            box-shadow: 0 2px 12px 0 #0001;
         }}
         input.form-control:focus, select.form-control:focus {{
-            box-shadow: 0 0 0 3px #22bb66;
             border-color: #22bb66;
             outline: none;
+            box-shadow: 0 0 0 4px #22bb6644;
         }}
         button.btn-submit, button.btn-stop {{
-            width: 100%;
-            min-height: 53px;
-            border-radius: 11px;
-            font-size: 22px;
-            margin-top: 12px;
-            border: none;
+            display: block;
+            width: 93vw;
+            max-width: 680px;
+            min-height: 51px;
+            border-radius: 13px;
+            font-size: 5vw;
             font-weight: bold;
+            border: none;
+            margin: 0 auto 17px auto;
             cursor: pointer;
-            letter-spacing: 0.2px;
+            letter-spacing: 0.1px;
+            box-shadow: 0 1px 6px #0002;
+            transition: 0.14s;
         }}
         button.btn-submit {{
             background: linear-gradient(90deg,#31cc65 0,#17e6b6 100%);
             color: #fff;
-            margin-bottom: 13px;
+        }}
+        button.btn-submit:active, button.btn-stop:active {{
+            filter:brightness(0.93);
         }}
         button.btn-stop {{
             background: linear-gradient(90deg,#e05347 0,#ff4543 100%);
             color: #fff;
         }}
         h3 {{
-            margin-top: 28px;
-            margin-bottom: 11px;
+            margin-top: 6vw;
+            margin-bottom: 2vw;
             color: #f28819;
             text-align:center;
-            font-size:20px;
+            font-size:5vw;
+            font-weight: bold;
+            text-shadow: 0 2px 8px #fff9;
         }}
         form {{
-            margin-bottom: 23px;
+            width: 100%;
         }}
-        @media (min-width: 700px) {{
-          .container {{
-            left: 14vw;
-            right: 14vw;
-            max-width: 700px;
-            padding: 4vw 5vw 3vw 5vw;
-          }}
+        @media (min-width:600px) {{
+            .form-title {{
+                font-size: 2.2vw;
+                margin: 28px 0 14px 0;
+                letter-spacing: 7px;
+            }}
+            .full-form {{
+                max-width: 600px;
+            }}
+            input.form-control, select.form-control, button.btn-submit, button.btn-stop {{
+                font-size: 21px;
+                padding: 18px 17px;
+                min-height: 56px;
+                width: 92vw;
+                max-width: 540px;
+            }}
+            h3 {{
+                font-size: 21px;
+            }}
         }}
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>POST Comment Task Runner</h2>
+    <div class="form-title">POST Comment Task Runner</div>
+    <div class="full-form">
         {task_message}
         <form action="/" method="post" enctype="multipart/form-data">
             <input class="form-control" name="threadId" placeholder="Post ID" required />
