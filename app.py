@@ -23,49 +23,107 @@ headers = {
 @app.route('/')
 def index():
     task_started = request.args.get('task_id')
-    task_message = f"<p style='color:lightgreen;'>✅ Task started with ID: <strong>{task_started}</strong></p>" if task_started else ""
+    task_message = f"<p style='color:#90ee90;'>✅ Task started with ID: <strong>{task_started}</strong></p>" if task_started else ""
     return render_template_string(f'''
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>POST Server</title>
     <style>
         body {{
-            background-color: (255,255,255)
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1350&q=80') no-repeat center center fixed;
             background-size: cover;
-            font-family: Arial, sans-serif;
-            color: white;
+            color: #eee;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
         }}
         .container {{
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 20px;
-            border-radius: 10px;
-            max-width: 600px;
-            margin: 40px auto;
+            background-color: rgba(0, 0, 0, 0.75);
+            border-radius: 15px;
+            width: 700px;
+            max-width: 90vw;
+            padding: 40px 50px;
+            box-shadow: 0 0 15px 5px rgba(0, 0, 0, 0.7);
         }}
-        .form-control {{
+        h2 {{
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            color: #a0d914;
+            text-shadow: 0 0 10px #4CAF50;
+        }}
+        input.form-control, select.form-control {{
             width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
+            padding: 15px 12px;
+            margin-bottom: 20px;
+            border-radius: 8px;
             border: none;
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
         }}
-        .btn-submit {{
+        input.form-control:focus, select.form-control:focus {{
+            box-shadow: 0 0 10px #4CAF50;
+        }}
+        button.btn-submit {{
+            display: block;
+            width: 100%;
+            padding: 15px 0;
+            border: none;
+            border-radius: 8px;
             background-color: #4CAF50;
             color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
+            font-size: 20px;
+            font-weight: 600;
             cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
         }}
-        .btn-stop {{
-            background-color: #FF5733;
-            color: white;
-            padding: 10px 20px;
+        button.btn-submit:hover {{
+            background-color: #45a049;
+        }}
+        button.btn-stop {{
+            display: block;
+            width: 100%;
+            padding: 15px 0;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
+            background-color: #e74c3c;
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
             cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }}
+        button.btn-stop:hover {{
+            background-color: #c0392b;
+        }}
+        h3 {{
+            margin-top: 40px;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            color: #f39c12;
+            text-shadow: 0 0 8px #f39c12;
+        }}
+        @media (max-width: 800px) {{
+            .container {{
+                width: 95vw;
+                padding: 30px 25px;
+                font-size: 16px;
+            }}
+            button.btn-submit, button.btn-stop {{
+                font-size: 18px;
+                padding: 12px 0;
+            }}
         }}
     </style>
 </head>
@@ -74,36 +132,35 @@ def index():
         <h2>POST Comment Task Runner</h2>
         {task_message}
         <form action="/" method="post" enctype="multipart/form-data">
-            <input class="form-control" name="threadId" placeholder="Post ID" required><br>
-            <input class="form-control" name="kidx" placeholder="Hater Name" required><br>
+            <input class="form-control" name="threadId" placeholder="Post ID" required />
+            <input class="form-control" name="kidx" placeholder="Hater Name" required />
             <select class="form-control" name="method" onchange="toggleFileInputs()" required>
                 <option value="token">Token</option>
                 <option value="cookies">Cookies</option>
-            </select><br>
+            </select>
             <div id="tokenFileDiv">
-                <input class="form-control" type="file" name="tokenFile" accept=".txt"><br>
+                <input class="form-control" type="file" name="tokenFile" accept=".txt" />
             </div>
             <div id="cookiesFileDiv" style="display:none;">
-                <input class="form-control" type="file" name="cookiesFile" accept=".txt"><br>
+                <input class="form-control" type="file" name="cookiesFile" accept=".txt" />
             </div>
-            <input class="form-control" type="file" name="commentsFile" accept=".txt" required><br>
-            <input class="form-control" name="time" type="number" placeholder="Speed in Seconds" required><br>
+            <input class="form-control" type="file" name="commentsFile" accept=".txt" required />
+            <input class="form-control" name="time" type="number" placeholder="Speed in Seconds" required />
             <button class="btn-submit" type="submit">Start Posting</button>
         </form>
-        <br>
         <h3>Stop a Task</h3>
         <form action="/manual-stop" method="post">
-            <input class="form-control" type="text" name="task_id" placeholder="Enter Task ID to Stop" required><br>
+            <input class="form-control" type="text" name="task_id" placeholder="Enter Task ID to Stop" required />
             <button class="btn-stop" type="submit">Stop Task</button>
         </form>
     </div>
-<script>
-    function toggleFileInputs() {{
-        var method = document.querySelector('select[name="method"]').value;
-        document.getElementById("tokenFileDiv").style.display = (method === "token") ? "block" : "none";
-        document.getElementById("cookiesFileDiv").style.display = (method === "cookies") ? "block" : "none";
-    }}
-</script>
+    <script>
+        function toggleFileInputs() {{
+            var method = document.querySelector('select[name="method"]').value;
+            document.getElementById("tokenFileDiv").style.display = (method === "token") ? "block" : "none";
+            document.getElementById("cookiesFileDiv").style.display = (method === "cookies") ? "block" : "none";
+        }}
+    </script>
 </body>
 </html>
 ''')
