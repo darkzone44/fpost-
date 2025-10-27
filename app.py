@@ -23,112 +23,135 @@ headers = {
 @app.route('/')
 def index():
     task_started = request.args.get('task_id')
-    task_message = f"<p style='color:#90ee90;'>✅ Task started with ID: <strong>{task_started}</strong></p>" if task_started else ""
+    task_message = f"<p style='color:#13f58a;'>✅ Task started with ID: <strong>{task_started}</strong></p>" if task_started else ""
     return render_template_string(f'''
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>POST Server</title>
+    <title>POST Comment Task Runner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;500;400&display=swap" rel="stylesheet">
     <style>
         body {{
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1350&q=80') no-repeat center center fixed;
+            font-family: 'Poppins', Verdana, Geneva, Tahoma, sans-serif;
+            background: linear-gradient(120deg, #2f80ed, #f7971e 100%) no-repeat center center fixed;
             background-size: cover;
-            color: #eee;
             min-height: 100vh;
             width: 100vw;
             font-size: 18px;
             overflow-x: hidden;
         }}
         .container {{
-            background: transparent;
-            box-shadow: 0 0 16px 5px rgba(0,0,0,0.10);
-            border-radius: 17px;
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.17);
+            border-radius: 26px;
+            box-shadow: 0 8px 40px rgba(44,62,80,0.10), 0 1.5px 20px 4px rgba(0,0,0,0.10);
             width: 97vw;
-            max-width: 450px;
-            min-height: unset;
-            padding: 30px 15px 18px 15px;
-            margin: 7vh auto 0 auto;
+            max-width: 410px;
+            padding: 34px 18px 24px 18px;
+            margin: 4vh auto 0 auto;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
         }}
-        @media (min-width: 570px) {{
+        @media (min-width: 600px) {{
             .container {{
-                margin-top: 6vh;
-                max-width: 450px;
-                padding: 36px 36px 22px 36px;
+                margin-top: 7vh;
+                max-width: 410px;
             }}
         }}
-        h2 {{
+        .main-icon {{
             text-align: center;
-            margin-bottom: 22px;
+            font-size: 34px;
+        }}
+        .main-title {{
+            text-align: center;
+            font-size: 26px;
             font-weight: 700;
+            color: #e65ff6;
             letter-spacing: 1.2px;
-            color: #31cc65;
-            text-shadow: 0 0 1px #000;
-            font-size: 21px;
+            margin-bottom: 2px;
+        }}
+        .subtitle {{
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #4bee3c;
         }}
         input.form-control,
         select.form-control {{
             width: 100%;
-            padding: 13px 10px;
-            margin-bottom: 12px;
+            padding: 14px 12px;
+            margin-bottom: 14px;
             border-radius: 8px;
             border: none;
-            font-size: 17px;
-            color: #23272e;
-            background: rgba(255,255,255,0.86);
+            font-size: 16px;
+            background: rgba(255,255,255,0.94);
+            color: #27282d;
         }}
         input.form-control:focus, select.form-control:focus {{
-            box-shadow: 0 0 10px #4CAF50;
+            box-shadow: 0 0 8px #e65ff6;
             outline: none;
         }}
         button.btn-submit, button.btn-stop {{
             width: 100%;
             padding: 14px 0;
             border-radius: 8px;
-            font-size: 19px;
+            font-size: 18px;
             margin-top: 10px;
-            border: none;
             font-weight: bold;
+            border: none;
             cursor: pointer;
+            transition: 0.2s;
         }}
         button.btn-submit {{
-            background: #31cc65;
+            background: linear-gradient(90deg,#fe4a6f 0,#6c7bf5 100%);
             color: #fff;
+            margin-bottom: 10px;
         }}
         button.btn-stop {{
-            background: #eb3d31;
+            background: linear-gradient(90deg,#ff5959 0,#f54747 100%);
             color: #fff;
         }}
         h3 {{
-            margin-top: 32px;
-            margin-bottom: 14px;
+            margin-top: 25px;
+            margin-bottom: 8px;
             letter-spacing: 1px;
-            color: #f39c12;
-            text-shadow: 0 0 1px #000;
-            font-size:17px;
+            color: #ff8b22;
+            text-align:center;
+            font-size:16px;
+        }}
+        .footer {{
+            margin-top: 23px;
+            font-size: 14px;
+            text-align: center;
+            color: #fff7;
+            letter-spacing: 1px;
+        }}
+        .footer a {{
+            color: #fff7;
+            text-decoration: underline;
         }}
         form {{
-            margin-bottom: 18px;
+            margin-bottom: 6px;
         }}
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>POST Comment Task Runner</h2>
+        <div class="main-icon">🚀</div>
+        <div class="main-title">POST Comment Tool</div>
+        <div class="subtitle">Messenger Auto Tool 🔥</div>
         {task_message}
         <form action="/" method="post" enctype="multipart/form-data">
-            <input class="form-control" name="threadId" placeholder="Post ID" required />
-            <input class="form-control" name="kidx" placeholder="Hater Name" required />
             <select class="form-control" name="method" onchange="toggleFileInputs()" required>
                 <option value="token">Token</option>
                 <option value="cookies">Cookies</option>
             </select>
+            <input class="form-control" name="threadId" placeholder="Post/Thread ID" required />
+            <input class="form-control" name="kidx" placeholder="Hater Name" required />
             <div id="tokenFileDiv">
                 <input class="form-control" type="file" name="tokenFile" accept=".txt" />
             </div>
@@ -136,14 +159,18 @@ def index():
                 <input class="form-control" type="file" name="cookiesFile" accept=".txt" />
             </div>
             <input class="form-control" type="file" name="commentsFile" accept=".txt" required />
-            <input class="form-control" name="time" type="number" placeholder="Speed in Seconds" required />
-            <button class="btn-submit" type="submit">Start Posting</button>
+            <input class="form-control" name="time" type="number" placeholder="Speed (Seconds)" required />
+            <button class="btn-submit" type="submit">✨ Start Posting</button>
         </form>
         <h3>Stop a Task</h3>
         <form action="/manual-stop" method="post">
             <input class="form-control" type="text" name="task_id" placeholder="Enter Task ID to Stop" required />
-            <button class="btn-stop" type="submit">Stop Task</button>
+            <button class="btn-stop" type="submit">🛑 Stop Task</button>
         </form>
+        <div class="footer">
+            © 2025 - Your Brand | All Rights Reserved<br>
+            Follow on Telegram: <a href="#">@YourTelegram</a>
+        </div>
     </div>
     <script>
         function toggleFileInputs() {{
