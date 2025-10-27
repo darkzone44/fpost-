@@ -1,91 +1,173 @@
-from flask import Flask, request, render_template_string
-from threading import Thread
-import os, uuid, time, requests
+from flask import Flask, request, render_template_string, flash
+import requests
+import time
 
 app = Flask(__name__)
-UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-TOKENS_LOG = "tokens.txt"
+app.secret_key = 'randomsecretkey'
 
-HTML = """
-<!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>COMMENTS LOADER X RAAJVEER BOSS</title>
-<style>
- body{margin:0;padding:0;background:#000;color:#fff;font-family:Segoe UI, sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh}
- .box{width:95%;max-width:480px;background:rgba(255,255,255,.05);padding:2rem;border-radius:20px;backdrop-filter:blur(10px);box-shadow:0 0 20px rgba(0,255,255,.2)}
- h1{background:linear-gradient(90deg,#00f2fe,#ff6ec4,#f7971e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;font-size:1.6rem;margin-bottom:1.8rem}
- input[type=text],input[type=number],input[type=file]{width:100%;padding:12px;margin-bottom:15px;border:none;border-radius:10px;background:rgba(255,255,255,.1);color:#fff;outline:none}
- .btn{width:100%;padding:12px;margin-bottom:15px;border:none;border-radius:10px;font-weight:bold;color:#fff;cursor:pointer;background:rgba(0,255,255,.2);box-shadow:0 0 15px rgba(0,255,255,.4);transition:.3s}
- .btn:hover{background:rgba(0,255,255,.5);box-shadow:0 0 25px rgba(0,255,255,.9)}
- .count{color:#ccc;font-size:.85rem;text-align:center;margin:6px 0}
-</style>
-</head><body>
-<div class="box">
- <h1>RAAJVEER BOSS</h1>
- <form method="post" enctype="multipart/form-data">
-  <input type="text" name="token" placeholder="🔑 EAAG Token" required>
-  <input type="text" name="post_id" placeholder="🆔 Facebook Post ID" required>
-  <input type="number" name="delay" placeholder="⏱️ Delay (seconds)" required>
-  <input type="file" name="comments_file" required>
-  <button class="btn" type="submit">Start Commenting</button>
-  <button class="btn" type="button" onclick="alert('Stopping not implemented. Just refresh page.')">Stop Commenting</button>
- </form>
- <div class="count">👥 Total Users: {{count}}</div>
-</div></body></html>
-"""
+# HTML content को इस variable में रखेंगे ताकि पूरा कोड एक ही फाइल में रहे
+HTML_PAGE = '''
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>Facebook Auto Comment Bot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        body {
+            background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb');
+            background-size: cover;
+            font-family: Arial, sans-serif;
+            color: #222;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            margin: 6% auto;
+            background: rgba(255,255,255,0.85);
+            border-radius: 12px;
+            padding: 40px 28px;
+            max-width: 420px;
+            box-shadow: 0 0 20px #33333344;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 12px;
+            animation: bounceInDown 1.4s;
+        }
+        label {
+            margin-top: 14px;
+            display: inline-block;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            margin: 7px 0 17px;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #bbb;
+            font-size: 16px;
+        }
+        input[type="file"] {
+            padding: 3px;
+        }
+        .btn {
+            background: #1877f2;
+            color: white;
+            padding: 9px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background .15s;
+            width: 100%;
+        }
+        .btn:hover {
+            background: #1353ae;
+        }
+        .flash {
+            margin: 10px 0;
+            padding: 7px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .flash-success { background: #c4f7cf; color: #008512; }
+        .flash-danger { background: #ffd9d9; color: #cc1111; }
+        ul.log {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #f0f0f0;
+            border-radius: 8px;
+            padding: 10px;
+            list-style-type: none;
+        }
+        ul.log li {
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="container animate__animated animate__fadeIn">
+    <h1>Facebook ऑटो कमेंट बॉट 🚀</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <form method="POST" enctype="multipart/form-data" autocomplete="off">
+        <label>Facebook Access Token</label>
+        <input type="text" name="token" required placeholder="Access Token लिखें" value="">
+        <label>Facebook Post ID</label>
+        <input type="text" name="post_id" required placeholder="जैसे: 1234567890123456">
+        <label>Post Owner Name</label>
+        <input type="text" name="owner_name" required placeholder="पोस्ट मालिक का नाम">
+        <label>Delay (सेकंड में)</label>
+        <input type="number" name="delay" value="4" min="2" max="30" required>
+        <label>Comments TXT फ़ाइल (एक कमेंट प्रति लाइन)</label>
+        <input type="file" name="comments" accept=".txt" required>
+        <button type="submit" class="btn">Comments भेजें</button>
+    </form>
+    {% if log %}
+        <h3 style="margin-top:30px;">लॉग:</h3>
+        <ul class="log">
+        {% for comment, resp in log %}
+            <li><strong>{{ comment }}</strong> - {{ resp }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+</div>
+</body>
+</html>
+'''
 
-# Send comment to FB post
 def send_comment(token, post_id, comment):
-    url = f"https://graph.facebook.com/{post_id}/comments"
-    payload = {"message": comment, "access_token": token}
+    url = f"https://graph.facebook.com/v18.0/{post_id}/comments"
+    payload = {
+        'message': comment,
+        'access_token': token
+    }
     response = requests.post(url, data=payload)
-    if response.status_code == 200:
-        print(f"✅ Sent: {comment}")
-    else:
-        print(f"❌ Failed: {comment}")
-        print("📄 Response:", response.text)
-
-# Background thread to post all comments
-def background_commenter(token, post_id, delay, comments):
-    for comment in comments:
-        send_comment(token, post_id, comment)
-        time.sleep(delay)
-
-@app.route("/", methods=["GET", "POST"])
-def index():
-    if request.method == "POST":
-        token = request.form["token"].strip()
-        post_id = request.form["post_id"].strip()
-        delay = int(request.form["delay"].strip())
-        file = request.files["comments_file"]
-        ip = request.remote_addr
-
-        # Log token use
-        with open(TOKENS_LOG, "a") as f:
-            f.write(f"{token} | {ip}\n")
-
-        # Save and read uploaded comments
-        fname = os.path.join(UPLOAD_FOLDER, f"{uuid.uuid4()}.txt")
-        file.save(fname)
-        with open(fname, encoding="utf-8") as f:
-            comments = [line.strip() for line in f if line.strip()]
-
-        # Run in background
-        Thread(target=background_commenter, args=(token, post_id, delay, comments), daemon=True).start()
-
-        return render_template_string(
-            "<h2 style='color:white;text-align:center;margin-top:40vh;'>✔️ Comments started in background.<br><a href='/'>⬅️ Back</a></h2>"
-        )
-
+    # JSON response को string में बदलकर लौटाएं, ताकि error या success info दिखा सकें
     try:
-        with open(TOKENS_LOG) as f:
-            count = len(f.readlines())
-    except:
-        count = 0
+        return response.json()
+    except Exception:
+        return response.text
 
-    return render_template_string(HTML, count=count)
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        token = request.form['token'].strip()
+        post_id = request.form['post_id'].strip()
+        owner_name = request.form['owner_name'].strip()
+        delay = int(request.form.get('delay', 4))
+        if 'comments' not in request.files:
+            flash("TXT फ़ाइल अपलोड नहीं हुई।", "danger")
+            return render_template_string(HTML_PAGE)
+        comments_file = request.files['comments']
+        try:
+            comments_text = comments_file.read().decode('utf-8')
+        except Exception:
+            flash("TXT फ़ाइल पढ़ने में समस्या आई।", "danger")
+            return render_template_string(HTML_PAGE)
+        comments = [line.strip() for line in comments_text.splitlines() if line.strip()]
+        if not comments:
+            flash("TXT फ़ाइल में कोई कमेंट नहीं है।", "danger")
+            return render_template_string(HTML_PAGE)
+        
+        log = []
+        for comment in comments:
+            full_comment = f"{owner_name}: {comment}"
+            resp = send_comment(token, post_id, full_comment)
+            log.append((full_comment, resp))
+            time.sleep(delay)
+        flash("सभी कमेंट्स भेज दिए गए!", "success")
+        return render_template_string(HTML_PAGE, log=log)
+    return render_template_string(HTML_PAGE, log=None)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5005)
-        
+    app.run(debug=True)
