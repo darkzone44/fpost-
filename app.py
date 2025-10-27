@@ -31,69 +31,74 @@ def index():
     <meta charset="UTF-8" />
     <title>POST Comment Task Runner</title>
     <style>
-        body {{
+        html, body {{
             margin: 0;
             padding: 0;
+            height: 100%;
+            width: 100vw;
+        }}
+        body {{
             font-family: 'Segoe UI', Verdana, Geneva, Tahoma, sans-serif;
             background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1350&q=80') no-repeat center center fixed;
             background-size: cover;
             color: #222;
             min-height: 100vh;
-            width: 100vw;
+            min-width: 100vw;
             font-size: 18px;
             overflow-x: hidden;
+            box-sizing: border-box;
         }}
         .container {{
-            width: 96vw;
-            max-width: 550px;
-            margin: 3vw auto 0 auto;
-            padding: 4vw 2vw 2vw 2vw;
-            border-radius: 20px;
-            box-shadow: 0 10px 48px 0 rgba(44,62,80,0.22), 0 1.5px 12px 2px rgba(0,0,0,0.10);
-            background: rgba(255,255,255,0.90);
+            background: rgba(255,255,255,0.88);
+            width: 98vw;
+            min-height: 97vh;
+            max-width: 99vw;
+            max-height: 100vh;
+            margin: 0;
+            padding: 6vw 4vw 3vw 4vw;
+            border-radius: 18px;
+            box-shadow: 0 10px 34px 2px rgba(44,62,80,0.13);
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
-        }}
-        @media (max-width: 600px) {{
-            .container {{
-                max-width: 99vw;
-                padding: 5vw 1vw 2vw 1vw;
-            }}
+            position: absolute;
+            left: 1vw;
+            top: 1vw;
+            right: 1vw;
+            bottom: 1vw;
         }}
         h2 {{
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 24px;
             font-weight: 700;
             color: #22bb66;
-            letter-spacing: 1.1px;
+            font-size: 26px;
+            letter-spacing: 1.2px;
         }}
         input.form-control,
         select.form-control {{
             width: 100%;
-            min-height: 56px;
-            padding: 15px 15px;
-            margin-bottom: 17px;
-            border-radius: 10px;
-            border: 1.5px solid #e1e4eb;
-            font-size: 20px;
+            min-height: 60px;
+            padding: 18px 15px;
+            margin-bottom: 19px;
+            border-radius: 11px;
+            border: 1.5px solid #c2c9d6;
+            font-size: 22px;
             background: #f8fafc;
-            color: #1b1c22;
-            transition: box-shadow 0.20s;
+            color: #20212c;
             box-sizing: border-box;
         }}
         input.form-control:focus, select.form-control:focus {{
-            box-shadow: 0 0 0 2px #22bb66;
+            box-shadow: 0 0 0 3px #22bb66;
             border-color: #22bb66;
             outline: none;
         }}
         button.btn-submit, button.btn-stop {{
             width: 100%;
-            min-height: 48px;
-            padding: 0;
-            border-radius: 10px;
-            font-size: 21px;
-            margin-top: 10px;
+            min-height: 53px;
+            border-radius: 11px;
+            font-size: 22px;
+            margin-top: 12px;
             border: none;
             font-weight: bold;
             cursor: pointer;
@@ -102,30 +107,29 @@ def index():
         button.btn-submit {{
             background: linear-gradient(90deg,#31cc65 0,#17e6b6 100%);
             color: #fff;
-            margin-bottom: 8px;
+            margin-bottom: 13px;
         }}
         button.btn-stop {{
             background: linear-gradient(90deg,#e05347 0,#ff4543 100%);
             color: #fff;
         }}
         h3 {{
-            margin-top: 35px;
-            margin-bottom: 15px;
+            margin-top: 28px;
+            margin-bottom: 11px;
             color: #f28819;
             text-align:center;
-            font-size:18px;
+            font-size:20px;
         }}
         form {{
-            margin-bottom: 18px;
+            margin-bottom: 23px;
         }}
-        @media (min-width:801px) {{
-            .container {{
-                margin-top: 5vw;
-            }}
-            input.form-control, select.form-control {{
-                min-height: 62px;
-                font-size: 22px;
-            }}
+        @media (min-width: 700px) {{
+          .container {{
+            left: 14vw;
+            right: 14vw;
+            max-width: 700px;
+            padding: 4vw 5vw 3vw 5vw;
+          }}
         }}
     </style>
 </head>
