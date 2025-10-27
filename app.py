@@ -234,5 +234,6 @@ def send_comment_api():
     except Exception:
         return jsonify({'error': 'Failed to parse response'}), 500
 
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+    
