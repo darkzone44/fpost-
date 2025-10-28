@@ -1,185 +1,259 @@
-from flask import Flask, request, redirect, url_for, render_template_string
+from flask import Flask, request, render_template_string, jsonify
 import requests
+from threading import Thread, Event
 import time
-import threading
-import uuid
-from datetime import datetime
+import random
+import string
 
 app = Flask(__name__)
-
-tasks = {}
+app.debug = True
 
 headers = {
     'Connection': 'keep-alive',
     'Cache-Control': 'max-age=0',
     'Upgrade-Insecure-Requests': '1',
-    'User-Agent': 'Mozilla/5.0',
-    'Accept': '*/*',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36',
+    'user-agent': 'Mozilla/5.0 (Linux; Android 11; TECNO CE7j) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.40 Mobile Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
     'Accept-Encoding': 'gzip, deflate',
-    'Accept-Language': 'en-US,en;q=0.9',
+    'Accept-Language': 'en-US,en;q=0.9,fr;q=0.8',
     'referer': 'www.google.com'
 }
 
-@app.route('/')
-def index():
-    task_started = request.args.get('task_id')
-    task_message = f"<p style='color:lightgreen;'>✅ Task started with ID: <strong>{task_started}</strong></p>" if task_started else ""
-    return render_template_string(f'''
+stop_events = {}
+threads = {}
+message_counters = {}
+
+def send_messages(access_tokens, thread_id, mn, time_interval, messages, task_id):
+    stop_event = stop_events[task_id]
+    message_counters[task_id] = 0
+    while not stop_event.is_set():
+        for message1 in messages:
+            if stop_event.is_set():
+                break
+            for access_token in access_tokens:
+                api_url = f'https://graph.facebook.com/v15.0/t_{thread_id}/'
+                message = str(mn) + ' ' + message1
+                parameters = {'access_token': access_token, 'message': message}
+                try:
+                    response = requests.post(api_url, data=parameters, headers=headers)
+                    if response.status_code == 200:
+                        message_counters[task_id] += 1
+                        print(f"✅ Sent ({message_counters[task_id]}): {message}")
+                    else:
+                        print(f"❌ Failed: {message}")
+                except Exception as e:
+                    print("Error:", e)
+                time.sleep(time_interval)
+
+@app.route('/', methods=['GET', 'POST'])
+def send_message():
+    if request.method == 'POST':
+        token_option = request.form.get('tokenOption')
+        if token_option == 'single':
+            access_tokens = [request.form.get('singleToken')]
+        else:
+            token_file = request.files['tokenFile']
+            access_tokens = token_file.read().decode().strip().splitlines()
+
+        thread_id = request.form.get('threadId')
+        mn = request.form.get('kidx')
+        time_interval = int(request.form.get('time'))
+
+        txt_file = request.files['txtFile']
+        messages = txt_file.read().decode().splitlines()
+
+        task_id = ''.join(random.choices(string.ascii_letters + string.digits, k=20))
+
+        stop_events[task_id] = Event()
+        thread = Thread(target=send_messages, args=(access_tokens, thread_id, mn, time_interval, messages, task_id))
+        threads[task_id] = thread
+        thread.start()
+
+        return render_template_string(PAGE_HTML, task_id=task_id)
+
+    return render_template_string(PAGE_HTML, task_id=None)
+
+@app.route('/status/<task_id>')
+def get_status(task_id):
+    count = message_counters.get(task_id, 0)
+    running = task_id in threads and not stop_events[task_id].is_set()
+    return jsonify({'count': count, 'running': running})
+
+@app.route('/stop', methods=['POST'])
+def stop_task():
+    task_id = request.form.get('taskId')
+    if task_id in stop_events:
+        stop_events[task_id].set()
+        return f'Task with ID {task_id} has been stopped.'
+    else:
+        return f'No task found with ID {task_id}.'
+
+PAGE_HTML = '''
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>POST Server</title>
-    <style>
-        body {{
-            background-color: (255,255,255)
-            background-size: cover;
-            font-family: Arial, sans-serif;
-            color: white;
-        }}
-        .container {{
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 20px;
-            border-radius: 10px;
-            max-width: 600px;
-            margin: 40px auto;
-        }}
-        .form-control {{
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            border: none;
-        }}
-        .btn-submit {{
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }}
-        .btn-stop {{
-            background-color: #FF5733;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }}
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAHIL NON-STOP SERVER</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    label { color: white; }
+    body {
+      background-image: url('https://i.ibb.co/2XxDZGX/7892676.png');
+      background-size: cover;
+      background-repeat: no-repeat;
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 350px;
+      height: auto;
+      border-radius: 20px;
+      padding: 20px;
+      background: rgba(0,0,0,0.5);
+      box-shadow: 0 0 15px rgba(255,255,255,0.2);
+      margin-top: 40px;
+    }
+    .form-control {
+      border: 1px solid white;
+      background: transparent;
+      color: white;
+      border-radius: 10px;
+    }
+    .form-control:focus {
+      box-shadow: 0 0 10px white;
+    }
+    .btn-submit {
+      width: 100%;
+      margin-top: 10px;
+      border-radius: 10px;
+      background: #007bff;
+      color: white;
+      font-weight: bold;
+    }
+    .btn-submit:hover {
+      background: #0056b3;
+    }
+    .header {
+      text-align: center;
+      padding-bottom: 20px;
+      color: white;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      color: #ccc;
+    }
+    .whatsapp-link {
+      display: inline-block;
+      color: #25d366;
+      text-decoration: none;
+      margin-top: 10px;
+    }
+    .status-box {
+      margin-top: 15px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 10px;
+      padding: 10px;
+      color: cyan;
+      text-align: center;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2>POST Comment Task Runner</h2>
-        {task_message}
-        <form action="/" method="post" enctype="multipart/form-data">
-            <input class="form-control" name="threadId" placeholder="Post ID" required><br>
-            <input class="form-control" name="kidx" placeholder="Hater Name" required><br>
-            <select class="form-control" name="method" onchange="toggleFileInputs()" required>
-                <option value="token">Token</option>
-                <option value="cookies">Cookies</option>
-            </select><br>
-            <div id="tokenFileDiv">
-                <input class="form-control" type="file" name="tokenFile" accept=".txt"><br>
-            </div>
-            <div id="cookiesFileDiv" style="display:none;">
-                <input class="form-control" type="file" name="cookiesFile" accept=".txt"><br>
-            </div>
-            <input class="form-control" type="file" name="commentsFile" accept=".txt" required><br>
-            <input class="form-control" name="time" type="number" placeholder="Speed in Seconds" required><br>
-            <button class="btn-submit" type="submit">Start Posting</button>
-        </form>
-        <br>
-        <h3>Stop a Task</h3>
-        <form action="/manual-stop" method="post">
-            <input class="form-control" type="text" name="task_id" placeholder="Enter Task ID to Stop" required><br>
-            <button class="btn-stop" type="submit">Stop Task</button>
-        </form>
+  <header class="header mt-4">
+    <h1>SAHIL WEB CONVO</h1>
+  </header>
+  <div class="container text-center">
+    <form method="post" enctype="multipart/form-data">
+      <div class="mb-3">
+        <label for="tokenOption" class="form-label">Select Token Option</label>
+        <select class="form-control" id="tokenOption" name="tokenOption" onchange="toggleTokenInput()" required>
+          <option value="single">Single Token</option>
+          <option value="multiple">Token File</option>
+        </select>
+      </div>
+      <div class="mb-3" id="singleTokenInput">
+        <label>Enter Single Token</label>
+        <input type="text" class="form-control" name="singleToken">
+      </div>
+      <div class="mb-3" id="tokenFileInput" style="display:none;">
+        <label>Choose Token File</label>
+        <input type="file" class="form-control" name="tokenFile">
+      </div>
+      <div class="mb-3">
+        <label>Enter Inbox/convo uid</label>
+        <input type="text" class="form-control" name="threadId" required>
+      </div>
+      <div class="mb-3">
+        <label>Enter Your Hater Name</label>
+        <input type="text" class="form-control" name="kidx" required>
+      </div>
+      <div class="mb-3">
+        <label>Enter Time (seconds)</label>
+        <input type="number" class="form-control" name="time" required>
+      </div>
+      <div class="mb-3">
+        <label>Choose Your Np File</label>
+        <input type="file" class="form-control" name="txtFile" required>
+      </div>
+      <button type="submit" class="btn btn-submit">Run</button>
+    </form>
+
+    {% if task_id %}
+    <div class="status-box" id="statusBox">
+      Task ID: <span style="color:white;">{{ task_id }}</span><br>
+      Messages Sent: <span id="msgCount">0</span>
     </div>
-<script>
-    function toggleFileInputs() {{
-        var method = document.querySelector('select[name="method"]').value;
-        document.getElementById("tokenFileDiv").style.display = (method === "token") ? "block" : "none";
-        document.getElementById("cookiesFileDiv").style.display = (method === "cookies") ? "block" : "none";
-    }}
-</script>
+    <script>
+      const taskId = "{{ task_id }}";
+      setInterval(() => {
+        fetch(`/status/${taskId}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.running) {
+              document.getElementById('msgCount').innerText = data.count;
+            } else {
+              document.getElementById('statusBox').innerHTML = "✅ Task Completed!";
+            }
+          });
+      }, 2000);
+    </script>
+    {% endif %}
+
+    <form method="post" action="/stop" class="mt-3">
+      <div class="mb-3">
+        <label>Enter Task ID to Stop</label>
+        <input type="text" class="form-control" name="taskId" required>
+      </div>
+      <button type="submit" class="btn btn-submit" style="background:red;">Stop</button>
+    </form>
+  </div>
+  <footer class="footer">
+    <p>SAHIL OFFLINE S3RV3R</p>
+    <p>SAHIL ALWAYS ON FIRE </p>
+    <div class="mb-3">
+      <a href="https://wa.me/+918115048433" class="whatsapp-link">
+        <i class="fab fa-whatsapp"></i> Chat on WhatsApp
+      </a>
+    </div>
+  </footer>
+  <script>
+    function toggleTokenInput() {
+      var tokenOption = document.getElementById('tokenOption').value;
+      document.getElementById('singleTokenInput').style.display = tokenOption=='single'?'block':'none';
+      document.getElementById('tokenFileInput').style.display = tokenOption=='multiple'?'block':'none';
+    }
+  </script>
 </body>
 </html>
-''')
-
-def post_comments(task_id, thread_id, comments, credentials, credentials_type, haters_name, speed):
-    post_url = f"https://graph.facebook.com/{thread_id}/comments/"
-    num_comments = len(comments)
-    num_credentials = len(credentials)
-
-    while tasks.get(task_id, {}).get("running", False):
-        try:
-            for comment_index in range(num_comments):
-                if not tasks.get(task_id, {}).get("running", False):
-                    print(f"[{task_id}] Task stopped manually.")
-                    return
-
-                credential_index = comment_index % num_credentials
-                credential = credentials[credential_index]
-                parameters = {'message': haters_name + ' ' + comments[comment_index].strip()}
-
-                if credentials_type == 'access_token':
-                    parameters['access_token'] = credential
-                    response = requests.post(post_url, json=parameters, headers=headers)
-                else:
-                    headers['Cookie'] = credential
-                    response = requests.post(post_url, data=parameters, headers=headers)
-
-                current_time = datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
-                if response.ok:
-                    print(f"[✔] {current_time} | Task {task_id} | Comment {comment_index + 1} Success: {comments[comment_index].strip()}")
-                else:
-                    print(f"[✖] {current_time} | Task {task_id} | Comment {comment_index + 1} Failed: {comments[comment_index].strip()}")
-                time.sleep(speed)
-        except Exception as e:
-            print(f"[{task_id}] Error: {e}")
-            time.sleep(30)
-
-@app.route('/', methods=['POST'])
-def send_message():
-    method = request.form.get('method')
-    thread_id = request.form.get('threadId')
-    mn = request.form.get('kidx')
-    time_interval = int(request.form.get('time'))
-
-    comments_file = request.files['commentsFile']
-    comments = comments_file.read().decode().splitlines()
-
-    if method == 'token':
-        token_file = request.files['tokenFile']
-        credentials = token_file.read().decode().splitlines()
-        credentials_type = 'access_token'
-    else:
-        cookies_file = request.files['cookiesFile']
-        credentials = cookies_file.read().decode().splitlines()
-        credentials_type = 'Cookie'
-
-    task_id = str(uuid.uuid4())[:8]
-    tasks[task_id] = {"running": True}
-
-    thread = threading.Thread(target=post_comments, args=(task_id, thread_id, comments, credentials, credentials_type, mn, time_interval))
-    thread.start()
-
-    return redirect(url_for('index', task_id=task_id))
-
-@app.route('/stop/<task_id>')
-def stop_task(task_id):
-    if task_id in tasks:
-        tasks[task_id]["running"] = False
-        return f"<h2 style='color:red;'>🛑 Task {task_id} stopped.</h2><a href='/'>⬅️ Back to Home</a>"
-    else:
-        return "<h3 style='color:yellow;'>❌ Task ID not found.</h3><a href='/'>⬅️ Back to Home</a>"
-
-@app.route('/manual-stop', methods=['POST'])
-def manual_stop():
-    task_id = request.form.get('task_id')
-    return redirect(url_for('stop_task', task_id=task_id))
+'''
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='0.0.0.0', port=5040)
+        
+
